@@ -1,0 +1,335 @@
+
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title> Canvas Dots</title>
+    <style>
+      body {
+        margin: 0px;
+        padding: 0px;
+	 background: url("http://ampdstudents.com/wp-content/uploads/2013/03/sunburst_background2.jpg"); 
+      }
+	@font-face {
+    font-family: 'arcadeFont';
+    src: url('ARCADECLASSIC.ttf');
+	}
+      #myCanvas{
+	float: left;
+        border: 1px solid black;
+        //margin-left: 290px;
+        margin-top: 50px;
+      }
+
+      #clearButton{
+	margin-left: 0px; 
+        width: 100px;
+        height: 50px;
+        font-size: 30px;
+	font-family: 'arcadeFont';
+	background-color: white; 
+ 	border-style: solid;
+    	border-width: 0px;
+transition: background-color 0.5s; 
+
+      }
+	#clearButton:hover{
+	
+	background-color: gray;
+	color: white; 
+	}
+	
+	p{
+	font-size: 30px; 
+	color:white; 
+	font-family: 'arcadeFont'; 
+	}
+      #button{
+        margin-top: 20px;
+        margin-left: 900px;
+	 
+      }
+      #header1{
+         font-size: 100px;
+         margin-left: 860px; 
+         font-family: arcadeFont; 
+	color:white;
+         
+      }
+	#score1{
+	
+	  
+	}
+	#score2{
+	float: left;
+	   margin-left: 100px; 
+	  margin-top: 100px; 
+	}
+
+	#headerDiv{
+	height: 100px; 
+	}
+	#gameScreen{
+ 
+	//display: inline; 
+  height: 775px;
+	}
+	#score1Div{
+	float: left;
+	 margin-left: 120px; 
+	  margin-top: 100px; 
+	margin-right: 100px; 
+	
+	}
+
+	#score1Num{
+	font-size: 50px; 
+	margin-left: 110px; 
+	}
+	#score2Num{
+	font-size: 50px; 
+	margin-left: 10px; 
+	}
+
+	#score2Div
+	{	margin-top: 30px; 
+		float: left;
+		//border-style: solid;
+    		//border-color: red;
+		//width: 100px; 
+	}
+  #timer{
+    position: absolute;
+    margin-left: 50%;
+    margin-top: 13%; 
+
+  }
+  #countDown
+  {
+    font-size: 100px;
+  }
+
+    </style>
+  </head>
+  <body>
+ 	<div id = 'headerDiv'>
+		 <h id = "header1">Pong</h>
+	</div> 
+  <div id = "timer"> 
+    <p id = "countDown"></p> 
+  </div>
+  <div id = 'gameScreen'>
+    <div id='score1Div'>
+    <p id = 'score1'> Score </p> 
+    <p id = 'score2Num'> 0 </p> 
+    </div> 
+    <canvas id="myCanvas" width="1280" height="720"></canvas>
+	<div id = 'score2Div'> 
+		<p id = 'score2'> Score </p> 
+		<p id = 'score1Num'> 0 </p> 
+	</div>
+  </div> 
+     
+      
+    <!-- <div id = "button">
+      <button id = "clearButton" accesskey = "c" ><u>P</u>ause</button>
+    </div> --> 
+    <script src="http://localhost:8000/socket.io/socket.io.js"></script>
+    <script>
+      var player2Score = 0; 
+      var width = 1280;
+      var height = 720; 
+      var localPlayer = [0,0];
+	    var remotePlayer = [];
+      var ball = [640,360,10,0,0]; //x,y,radius,dx,dy
+      var mouseY = 0; 
+      var myTimer; 
+
+
+      var socket;
+      var playerNum;  
+
+      socket = io.connect("http://localhost", {port: 8000, transports: ["websocket"]});
+
+      socket.on("connect", onSocketConnected);
+      socket.on("new player", onNewPlayer);
+      socket.on("player alignment", onPlayerAlignment);
+      socket.on("move player", onMovePlayer);
+      socket.on("ball moved", onMoveBall); 
+      socket.on("score made", onScoreMade);
+      socket.on("count down", onCountDown);
+      function onSocketConnected() {
+        console.log("Connected to socket server");
+
+        // Send local player data to the game server
+        var name = prompt("Please enter your name");
+        socket.emit("new player", {x: localPlayer[0], y: localPlayer[1], name: name});
+
+
+      };
+
+      function onNewPlayer(data) {
+        console.log("New player connected: "+data.id);
+
+        // Initialise the new player
+        var newPlayer = new Player(data.x, data.y);
+        newPlayer.id = data.id;
+
+        // Add new player to the remote players array
+        remotePlayers.push(newPlayer);
+      };
+
+      function onPlayerAlignment(data)
+      {
+          if(data.playerNum == 1)
+          {
+            alert("you are player 1");
+            playerNum = 1; 
+            localPlayer[0] = 0; 
+          }
+
+          if(data.playerNum == 2)
+          {
+            alert("you are player 2");
+            playerNum = 2; 
+            localPlayer[0] = 1260; 
+          }
+      }
+
+    function onMovePlayer(data) {
+      if(data.id != playerNum)
+      {
+        remotePlayer[0] = data.x;
+        remotePlayer[1] = data.y; 
+      }
+      
+    };
+
+    function onMoveBall(data)
+    {
+      console.log(data.x + ', ' + data.y);
+      ball[0] = data.x;
+      ball[1] = data.y;
+    }
+
+    function onScoreMade(data)
+    {
+      if(data.player == 1)
+      {
+        document.getElementById("score1Num").innerHTML = data.score; 
+      }
+      else
+      {
+        document.getElementById("score2Num").innerHTML = data.score; 
+      }
+    }
+
+   
+      var canvas = document.getElementById('myCanvas');
+      var context = canvas.getContext('2d');
+
+    function onCountDown(data)
+    {
+      if(data.count == 0)
+      {
+        document.getElementById('countDown').innerHTML = '';
+      }
+      else
+      {
+        document.getElementById('countDown').innerHTML = data.count+1; 
+      }
+      
+    }
+      function getMousePos(canvas, evt) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+          x: evt.clientX - rect.left,
+          y: evt.clientY - rect.top
+        };
+      }
+
+
+      document.onkeydown = checkKey;
+        function checkKey(e) {
+
+            e = e || window.event;
+
+            if (e.keyCode == '38') {
+               if(localPlayer[1] > 0)
+               {
+                  localPlayer[1] -= 20; 
+               }
+            }
+            if (e.keyCode == '40') {
+               if(localPlayer[1] <620)
+               {
+                  localPlayer[1] += 20;
+               }
+            }
+
+
+        }
+      function drawBall()
+      {   
+          if(playerNum == 1)
+          {
+            socket.emit("move ball",{}); 
+          }
+          
+          context.beginPath();
+          context.arc(ball[0],ball[1],ball[2],0,2*Math.PI);
+          context.strokeStyle="white";
+          context.stroke();
+          context.fillStyle="white";
+          context.fill();
+      }
+      function getMousePos(canvas, evt) {
+       var rect = canvas.getBoundingClientRect();
+       return {
+         x: evt.clientX - rect.left,
+         y: evt.clientY - rect.top
+       };
+      }
+
+      
+      function draw()
+      {
+         context.fillStyle = "black";
+         context.fillRect(0,0,1280,720);
+         context.fillStyle = "white";
+          
+         context.fillRect(localPlayer[0],localPlayer[1],20,100);
+	  context.fillRect(remotePlayer[0], remotePlayer[1],20,100);
+
+         drawBall();  
+      }
+      myTimer = setInterval(function () {
+
+         draw(); 
+           
+      }, 10);
+
+      function writeMessage(canvas, message) {
+        var context = canvas.getContext('2d');
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.font = '18pt Calibri';
+        context.fillStyle = 'white';
+        context.fillText(message, 10, 25);
+      }
+      canvas.addEventListener('mousemove', function(evt) {
+        var mousePos = getMousePos(canvas, evt);
+        var message = 'Mouse position: ' + mousePos.x + ',' + mousePos.y;
+        localPlayer[1] = mousePos.y;
+        socket.emit("move player", {id: playerNum, x: localPlayer[0], y: localPlayer[1]});
+        //writeMessage(canvas, message);
+      }, false);
+ 
+      document.getElementById("clearButton").addEventListener("click", clear);
+
+      function clear() {
+          context.clearRect(0, 0, canvas.width, canvas.height);
+          positionArray = [];
+      }
+    </script>
+  </body>
+</html>
+      

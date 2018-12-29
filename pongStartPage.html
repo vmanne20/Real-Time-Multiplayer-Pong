@@ -1,0 +1,62 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Pong</title>
+    <style>
+    	body
+    	{
+    		background: url(http://capitaldealersolutions.com/wp-content/uploads/2015/08/custom.jpg);
+    	}
+    	@font-face {
+		    font-family: 'arcadeFont';
+		    src: url('ARCADECLASSIC.ttf');
+		}
+    	#main
+    	{
+    		border-radius: 20px; 
+    		margin: auto;
+    		margin-top: 100px; 
+    		height: 700px;
+    		width: 500px;
+    		background-color: #f2f2f2; 
+    		opacity: 0.9; 
+    	}
+    	h1
+    	{
+    		font-family: arcadeFont; 
+    		font-size: 100px; 
+    	}
+    	#directions{
+    		width: 300px; 
+    		font-family: arial; 
+    	}
+    	#playButton{
+    		margin-top: 100px; 
+    		width: 300px; 
+    		height: 50px;
+    		background-color: white; 
+    		border-radius: 10px; 
+    		border: solid 2px; 
+    		border-color: lightgray; 
+    		font-family: arcadeFont; 
+    		font-size: 35px; 
+    		transition: all 0.6s ease 0s;
+    	}
+    	#playButton:hover{
+    		background: lightgray;
+    	}
+    </style> 
+  </head>
+  <body>
+  	<div id = "main">
+  		<center><h1> PONG </h1></center> 
+  		<center> 
+  		<div id = "directions">
+  			<center><h2> Directions: </h2></center> 
+  			<p> Press play to begin the game. After you press play, share the URL with a friend to play together. </p>  
+  		</div> 
+  		<a href="pong.html"><button id = "playButton" >Play</button></a>
+  	</center> 
+  	</div> 
+  </body>
+</html>
